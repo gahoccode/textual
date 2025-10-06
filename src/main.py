@@ -171,7 +171,7 @@ class InputScreen(Screen):
             }
 
             # Generate random portfolios
-            random_portfolios = generate_random_portfolios(mu, S, n_samples=10000)
+            random_portfolios = generate_random_portfolios(mu, S, n_samples=1000)
 
             # Create enhanced visualization
             html_content = create_enhanced_portfolio_chart(

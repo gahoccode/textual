@@ -143,7 +143,7 @@ def create_enhanced_portfolio_chart(
 
     # Add random portfolios as background scatter (colored by Sharpe ratio)
     fig.add_trace(
-        go.Scatter(
+        go.Scattergl(
             x=rand_vols,
             y=rand_returns,
             mode='markers',
