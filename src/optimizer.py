@@ -115,6 +115,113 @@ def get_max_sharpe_allocation(
         raise OptimizationError(f"Failed to optimize portfolio: {str(e)}")
 
 
+def get_min_volatility_allocation(
+    prices: pd.DataFrame,
+    risk_free_rate: float = 0.03
+) -> Dict[str, float]:
+    """
+    Calculate the minimum volatility portfolio allocation.
+
+    Args:
+        prices: DataFrame of historical prices (tickers as columns)
+        risk_free_rate: Annual risk-free rate (default 3%)
+
+    Returns:
+        Dictionary of {ticker: weight} for the minimum volatility portfolio
+
+    Raises:
+        OptimizationError: If optimization fails
+    """
+    try:
+        # Calculate expected returns and covariance matrix
+        mu = expected_returns.mean_historical_return(prices)
+        S = risk_models.sample_cov(prices)
+
+        # Optimize for minimum volatility
+        ef = EfficientFrontier(mu, S)
+        weights = ef.min_volatility()
+        cleaned_weights = ef.clean_weights()
+
+        # Filter out zero weights
+        cleaned_weights = {k: v for k, v in cleaned_weights.items() if v > 0.0001}
+
+        return cleaned_weights
+
+    except Exception as e:
+        raise OptimizationError(f"Failed to optimize portfolio: {str(e)}")
+
+
+def get_max_utility_allocation(
+    prices: pd.DataFrame,
+    risk_aversion: float = 1.0,
+    risk_free_rate: float = 0.03
+) -> Dict[str, float]:
+    """
+    Calculate the maximum utility portfolio allocation.
+
+    Args:
+        prices: DataFrame of historical prices (tickers as columns)
+        risk_aversion: Risk aversion parameter (default 1.0)
+        risk_free_rate: Annual risk-free rate (default 3%)
+
+    Returns:
+        Dictionary of {ticker: weight} for the maximum utility portfolio
+
+    Raises:
+        OptimizationError: If optimization fails
+    """
+    try:
+        # Calculate expected returns and covariance matrix
+        mu = expected_returns.mean_historical_return(prices)
+        S = risk_models.sample_cov(prices)
+
+        # Optimize for maximum quadratic utility
+        ef = EfficientFrontier(mu, S)
+        weights = ef.max_quadratic_utility(risk_aversion=risk_aversion, market_neutral=False)
+        cleaned_weights = ef.clean_weights()
+
+        # Filter out zero weights
+        cleaned_weights = {k: v for k, v in cleaned_weights.items() if v > 0.0001}
+
+        return cleaned_weights
+
+    except Exception as e:
+        raise OptimizationError(f"Failed to optimize portfolio: {str(e)}")
+
+
+def generate_random_portfolios(
+    mu: pd.Series,
+    S: pd.DataFrame,
+    n_samples: int = 10000
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """
+    Generate random portfolio samples for visualization.
+
+    Args:
+        mu: Expected returns series
+        S: Covariance matrix
+        n_samples: Number of random portfolios to generate (default 10000)
+
+    Returns:
+        Tuple of (returns_array, volatilities_array, sharpe_ratios_array)
+    """
+    n_assets = len(mu)
+
+    # Generate random weights using Dirichlet distribution
+    weights = np.random.dirichlet(np.ones(n_assets), n_samples)
+
+    # Calculate returns
+    returns = weights.dot(mu)
+
+    # Calculate volatilities
+    volatilities = np.sqrt(np.diag(weights @ S @ weights.T))
+
+    # Calculate Sharpe ratios
+    sharpe_ratios = returns / volatilities
+
+    return returns, volatilities, sharpe_ratios
+
+
 def get_portfolio_performance(
     prices: pd.DataFrame,
     weights: Dict[str, float],

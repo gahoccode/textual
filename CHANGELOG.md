@@ -1,5 +1,80 @@
 # Changelog
 
+## [1.1.0] - 2025-10-06
+
+### Added - Enhanced Portfolio Optimization
+
+#### Modified Files
+
+**src/optimizer.py**
+- **New Functions Added:**
+  - `get_min_volatility_allocation(prices: pd.DataFrame, risk_free_rate: float) -> Dict[str, float]`
+    - Calculates minimum volatility portfolio allocation
+    - Uses PyPortfolioOpt's min_volatility() method
+    - Returns cleaned weights dictionary
+  - `get_max_utility_allocation(prices: pd.DataFrame, risk_aversion: float, risk_free_rate: float) -> Dict[str, float]`
+    - Calculates maximum utility portfolio using quadratic utility function
+    - Takes risk aversion parameter (λ) as input
+    - Uses PyPortfolioOpt's max_quadratic_utility() method
+  - `generate_random_portfolios(mu: pd.Series, S: pd.DataFrame, n_samples: int) -> Tuple`
+    - Generates random portfolio samples for visualization
+    - Uses Dirichlet distribution for weight generation
+    - Returns arrays of returns, volatilities, and Sharpe ratios for 10,000 portfolios
+
+**src/visualizer.py**
+- **New Functions Added:**
+  - `create_enhanced_portfolio_chart(...) -> str`
+    - Creates comprehensive 2-row visualization with 4 subplots
+    - Row 1: Efficient frontier with 10,000 random portfolios (colored by Sharpe ratio using viridis colormap)
+    - Plots 3 optimal portfolios as stars: Max Sharpe (red), Min Volatility (cyan), Max Utility (orange)
+    - Row 2: Three pie charts showing allocation weights for each portfolio
+    - Includes performance metrics in title for all three portfolios
+    - Uses Bloomberg color palette: #0068ff (blue), #ff433d (red), #4af6c3 (cyan), #fb8b1e (orange)
+- **Deprecated Functions:**
+  - `create_combined_chart()` - Kept for backward compatibility, marked as DEPRECATED
+
+**src/main.py**
+- **New Imports:**
+  - Added `get_min_volatility_allocation`, `get_max_utility_allocation`, `generate_random_portfolios`
+  - Added `expected_returns`, `risk_models` from pypfopt
+  - Changed to use `create_enhanced_portfolio_chart`
+- **New Input Field:**
+  - Risk Aversion (λ) input field with default value 1.0
+  - Validation for risk aversion parameter
+- **Enhanced Optimization Flow:**
+  - Now calculates 3 portfolio types simultaneously:
+    1. Maximum Sharpe Ratio portfolio
+    2. Minimum Volatility portfolio
+    3. Maximum Utility portfolio (using user-specified risk aversion)
+  - Generates 10,000 random portfolios for comparison
+  - Passes all data to enhanced visualization function
+
+**src/theme.tcss**
+- **CSS Variable Fixes:**
+  - Changed `$panel` to `$app-panel` to avoid conflict with Textual's reserved variable names
+  - Fixed `Button.error` to `Button.-error` for consistent variant naming
+
+### Scope of Impact
+
+**New Functionality:**
+- Multi-portfolio comparison: Users can now compare 3 different optimization strategies side-by-side
+- Random portfolio visualization: 10,000 randomly generated portfolios provide context for optimal portfolios
+- Risk aversion parameter: Users can customize utility optimization based on their risk preferences
+
+**Modified Functions:**
+- src/optimizer.py: 3 new functions (lines 118-222)
+- src/visualizer.py: 1 new function `create_enhanced_portfolio_chart` (lines 99-284)
+- src/main.py: Enhanced optimization flow (lines 68-182)
+
+**Performance:**
+- Generation of 10,000 random portfolios adds ~1-2 seconds to computation time
+- Larger visualization (1600x1000px vs 1400x600px) requires more memory
+
+**User Experience:**
+- More comprehensive analysis with minimal additional user input
+- Bloomberg-themed colors provide professional, terminal-like aesthetics
+- Interactive Plotly charts allow zooming and hovering for detailed metrics
+
 ## [1.0.0] - 2025-10-06
 
 ### Added - Initial Implementation
