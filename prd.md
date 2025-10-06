@@ -1,6 +1,3 @@
-Perfect ✅ — using vnstock3 instead of yfinance makes sense if you’re focusing on Vietnamese equities. Below is the updated PRD with this change reflected throughout, especially in the Tech Stack, Features, and User Flow sections.
-
-⸻
 
 📝 Product Requirements Document (PRD)
 

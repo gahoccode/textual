@@ -1,10 +1,13 @@
 """Visualization module using Plotly and PyWebView."""
 
 from typing import Dict
+import sys
+import subprocess
+import base64
+from pathlib import Path
 import numpy as np
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-import webview
 
 
 def create_efficient_frontier_chart(
@@ -377,17 +380,37 @@ def create_combined_chart(
 
 def display_charts(html_content: str, title: str = "Portfolio Optimization Results") -> None:
     """
-    Display charts in a PyWebView window.
+    Display charts in a PyWebView window using a separate process.
+
+    This runs PyWebView in a separate process to avoid blocking the
+    Textual TUI event loop. PyWebView requires the main thread, so we
+    run it in its own process where it CAN be the main thread.
 
     Args:
         html_content: HTML string containing the visualization
         title: Window title
     """
-    webview.create_window(
-        title=title,
-        html=html_content,
-        width=1500,
-        height=700,
-        resizable=True
+    # Get path to webview_process.py
+    webview_script = Path(__file__).parent / "webview_process.py"
+
+    # Encode HTML as base64 to safely pass as command-line argument
+    html_b64 = base64.b64encode(html_content.encode('utf-8')).decode('ascii')
+
+    # Run webview in separate process
+    # Use sys.executable to ensure same Python interpreter
+    process = subprocess.Popen(
+        [sys.executable, str(webview_script), html_b64, title],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True
     )
-    webview.start()
+
+    # Wait for process to complete (window to close)
+    # This blocks, but it's in a separate process so Textual can still respond
+    stdout, stderr = process.communicate()
+
+    # Print any output from the webview process
+    if stdout:
+        print(f"[WebView] {stdout.strip()}")
+    if stderr:
+        print(f"[WebView] {stderr.strip()}", file=sys.stderr)

@@ -7,7 +7,8 @@ from textual.app import App, ComposeResult
 from textual.containers import Container, Vertical, Horizontal
 from textual.widgets import Header, Footer, Input, Button, Static, Label
 from textual.screen import Screen
-from textual import on
+from textual import on, work
+from textual.worker import get_current_worker
 
 from src.data_fetcher import fetch_vn_stock_data, DataFetchError
 from src.optimizer import (
@@ -83,7 +84,7 @@ class InputScreen(Screen):
 
     @on(Button.Pressed, "#optimize-btn")
     def on_optimize(self) -> None:
-        """Handle optimize button press."""
+        """Handle optimize button press - launches worker thread."""
         # Clear previous messages
         self.query_one("#error-message", Static).update("")
         self.query_one("#success-message", Static).update("")
@@ -126,7 +127,26 @@ class InputScreen(Screen):
         # Show processing message
         self.query_one("#success-message", Static).update("Processing... Please wait.")
 
-        # Run optimization
+        # Run optimization in worker thread to avoid blocking UI
+        self.run_optimization_worker(tickers, start_date, end_date, risk_free_rate, risk_aversion)
+
+    @work(thread=True, exclusive=True)
+    def run_optimization_worker(
+        self,
+        tickers: list,
+        start_date: str,
+        end_date: str,
+        risk_free_rate: float,
+        risk_aversion: float
+    ) -> None:
+        """
+        Run portfolio optimization in a worker thread.
+
+        This prevents blocking the Textual UI while:
+        1. Fetching data from vnstock3
+        2. Running optimization calculations
+        3. Displaying charts in separate PyWebView process
+        """
         try:
             # Fetch data
             prices = fetch_vn_stock_data(tickers, start_date, end_date)
@@ -181,25 +201,37 @@ class InputScreen(Screen):
                 risk_aversion
             )
 
-            # Update success message
-            self.query_one("#success-message", Static).update(
+            # Update success message from worker thread
+            self.app.call_from_thread(
+                self.query_one("#success-message", Static).update,
                 "Optimization complete! Opening visualization..."
             )
 
-            # Display charts (this will block until window is closed)
+            # Display charts in separate process (this will block until window is closed)
+            # But since we're in a worker thread, the Textual UI remains responsive
             display_charts(html_content)
 
             # Clear success message after window closes
-            self.query_one("#success-message", Static).update(
+            self.app.call_from_thread(
+                self.query_one("#success-message", Static).update,
                 "Visualization closed. You can run another optimization or exit."
             )
 
         except DataFetchError as e:
-            self.query_one("#error-message", Static).update(f"Data Error: {str(e)}")
+            self.app.call_from_thread(
+                self.query_one("#error-message", Static).update,
+                f"Data Error: {str(e)}"
+            )
         except OptimizationError as e:
-            self.query_one("#error-message", Static).update(f"Optimization Error: {str(e)}")
+            self.app.call_from_thread(
+                self.query_one("#error-message", Static).update,
+                f"Optimization Error: {str(e)}"
+            )
         except Exception as e:
-            self.query_one("#error-message", Static).update(f"Unexpected Error: {str(e)}")
+            self.app.call_from_thread(
+                self.query_one("#error-message", Static).update,
+                f"Unexpected Error: {str(e)}"
+            )
 
     @on(Button.Pressed, "#exit-btn")
     def on_exit(self) -> None:
