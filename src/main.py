@@ -2,6 +2,7 @@
 
 import sys
 from datetime import datetime, timedelta
+from pathlib import Path
 from textual.app import App, ComposeResult
 from textual.containers import Container, Vertical, Horizontal
 from textual.widgets import Header, Footer, Input, Button, Static, Label
@@ -20,51 +21,6 @@ from src.visualizer import create_combined_chart, display_charts
 
 class InputScreen(Screen):
     """Screen for collecting user inputs."""
-
-    CSS = """
-    InputScreen {
-        align: center middle;
-    }
-
-    #input-container {
-        width: 60;
-        height: auto;
-        background: $panel;
-        border: solid $primary;
-        padding: 2;
-    }
-
-    Label {
-        margin: 1 0;
-        color: $text;
-    }
-
-    Input {
-        margin: 0 0 1 0;
-    }
-
-    #button-container {
-        height: auto;
-        align: center middle;
-        margin: 1 0;
-    }
-
-    Button {
-        margin: 0 1;
-    }
-
-    #error-message {
-        color: $error;
-        margin: 1 0;
-        height: auto;
-    }
-
-    #success-message {
-        color: $success;
-        margin: 1 0;
-        height: auto;
-    }
-    """
 
     def compose(self) -> ComposeResult:
         """Create child widgets."""
@@ -202,6 +158,7 @@ class PortfolioApp(App):
     """Main Textual application."""
 
     TITLE = "Terminal Portfolio Optimizer"
+    CSS_PATH = Path(__file__).parent / "theme.tcss"
     BINDINGS = [
         ("q", "quit", "Quit"),
         ("ctrl+c", "quit", "Quit"),

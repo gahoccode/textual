@@ -1,0 +1,140 @@
+/* Bloomberg Terminal Inspired Theme */
+
+/* Color Variables */
+$background: #000000;
+$surface: #1a1a1a;
+$app-panel: #0d0d0d;
+
+$primary: #0068ff;
+$secondary: #fb8b1e;
+$accent: #4af6c3;
+
+$success: #4af6c3;
+$error: #ff433d;
+$warning: #fb8b1e;
+
+$text: #e8e8e8;
+$text-muted: #999999;
+$text-disabled: #555555;
+
+/* Global Styles */
+Screen {
+    background: $background;
+}
+
+/* Input Screen */
+InputScreen {
+    align: center middle;
+    background: $background;
+}
+
+#input-container {
+    width: 60;
+    height: auto;
+    background: $app-panel;
+    border: solid $primary;
+    padding: 2;
+}
+
+#title {
+    color: $primary;
+    text-style: bold;
+    content-align: center middle;
+}
+
+#subtitle {
+    color: $accent;
+    content-align: center middle;
+    margin-bottom: 1;
+}
+
+/* Labels */
+Label {
+    margin: 1 0;
+    color: $text;
+}
+
+/* Inputs */
+Input {
+    margin: 0 0 1 0;
+    background: $surface;
+    border: tall $primary;
+}
+
+Input:focus {
+    border: tall $accent;
+}
+
+Input.-valid {
+    border: tall $success;
+}
+
+Input.-invalid {
+    border: tall $error;
+}
+
+/* Buttons */
+Button {
+    margin: 0 1;
+    background: $primary;
+    color: $text;
+    border: none;
+}
+
+Button:hover {
+    background: $accent;
+    color: $background;
+    text-style: bold;
+}
+
+Button.-primary {
+    background: $primary;
+}
+
+Button.-primary:hover {
+    background: $accent;
+}
+
+Button.-error {
+    background: $error;
+}
+
+Button.-error:hover {
+    background: $warning;
+}
+
+#button-container {
+    height: auto;
+    align: center middle;
+    margin: 1 0;
+}
+
+/* Messages */
+#error-message {
+    color: $error;
+    margin: 1 0;
+    height: auto;
+    text-style: bold;
+}
+
+#success-message {
+    color: $success;
+    margin: 1 0;
+    height: auto;
+}
+
+/* Header & Footer */
+Header {
+    background: $surface;
+    color: $primary;
+}
+
+Footer {
+    background: $surface;
+    color: $text-muted;
+}
+
+/* Static Text */
+Static {
+    color: $text;
+}
